@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Reflection;
-using Microsoft.CodeAnalysis.CodeFixes;
+﻿// Copyright (c) Saritasa, LLC
 
 namespace Saritasa.Prettify.ConsoleApp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
+    using System.Reflection;
+    using Microsoft.CodeAnalysis.CodeFixes;
+
     public class CodeFixProviderHelper
     {
         public static ImmutableDictionary<string, ImmutableList<CodeFixProvider>> GetFixProviders(Assembly[] assemblies)

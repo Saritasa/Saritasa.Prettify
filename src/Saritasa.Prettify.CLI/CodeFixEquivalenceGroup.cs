@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.CodeFixes;
+﻿// Copyright (c) Saritasa, LLC
 
 namespace Saritasa.Prettify.ConsoleApp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CodeActions;
+    using Microsoft.CodeAnalysis.CodeFixes;
+
     internal class CodeFixEquivalenceGroup
     {
         private CodeFixEquivalenceGroup(
@@ -45,7 +47,7 @@ namespace Saritasa.Prettify.ConsoleApp
 
         internal int NumberOfDiagnostics { get; }
 
-        internal static async Task<ImmutableArray<CodeFixEquivalenceGroup>> CreateAsync(CodeFixProvider codeFixProvider, ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> allDiagnostics, 
+        internal static async Task<ImmutableArray<CodeFixEquivalenceGroup>> CreateAsync(CodeFixProvider codeFixProvider, ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> allDiagnostics,
             Solution solution, CancellationToken cancellationToken = default(CancellationToken))
         {
             var fixAllProvider = codeFixProvider.GetFixAllProvider();

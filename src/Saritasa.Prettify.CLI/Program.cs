@@ -1,22 +1,99 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.MSBuild;
-using Serilog;
+﻿// Copyright (c) Saritasa, LLC
 
 namespace Saritasa.Prettify.ConsoleApp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Configuration;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CodeFixes;
+    using Microsoft.CodeAnalysis.Diagnostics;
+    using Microsoft.CodeAnalysis.MSBuild;
+    using Serilog;
+
+    public class AssembliesHelper
+    {
+        public const string StyleCopAssemblyFolderKey = "StyleCopAssemblyFolder";
+        public const string StyleCopCodeFixesDllNameKey = "StyleCopCodeFixesDllName";
+        public const string StyleCopAnalyzersDllNameKey = "StyleCopAnalyzersDllName";
+
+
+        public static string GetFolderPath()
+        {
+            var folderValue = ConfigurationManager.AppSettings[StyleCopAssemblyFolderKey];
+            if (string.IsNullOrWhiteSpace(folderValue))
+            {
+                throw new ArgumentException($"Please specify folder in application settings with key {StyleCopAssemblyFolderKey}", nameof(folderValue));
+            }
+            if (!Directory.Exists(folderValue))
+            {
+                throw new DirectoryNotFoundException("Provided directory path for assemblies not found");
+            }
+
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderValue);
+        }
+
+        public static Assembly GetCodeFixAssembly()
+        {
+            var folder = GetFolderPath();
+
+            var codeFixAssemblyName = ConfigurationManager.AppSettings[StyleCopCodeFixesDllNameKey];
+            if (string.IsNullOrWhiteSpace(codeFixAssemblyName))
+            {
+                throw new ArgumentException($"Please specify dll name for codefixes in application settings with key {StyleCopCodeFixesDllNameKey}", nameof(codeFixAssemblyName));
+            }
+
+            var pathToAssembly = Path.Combine(folder, codeFixAssemblyName);
+            if (!File.Exists(pathToAssembly))
+            {
+                throw new FileNotFoundException($"Can't find file with provided name at path - {pathToAssembly}");
+            }
+
+            return Assembly.LoadFile(pathToAssembly);
+        }
+
+        public static Assembly GetAnalyzersAssembly()
+        {
+            var folder = GetFolderPath();
+
+            var assemblyName = ConfigurationManager.AppSettings[StyleCopAnalyzersDllNameKey];
+            if (string.IsNullOrWhiteSpace(assemblyName))
+            {
+                throw new ArgumentException($"Please specify dll name for analyzers in application settings with key {StyleCopAnalyzersDllNameKey}", nameof(assemblyName));
+            }
+
+            var pathToAssembly = Path.Combine(folder, assemblyName);
+            if (!File.Exists(pathToAssembly))
+            {
+                throw new FileNotFoundException($"Can't find file with provided name at path - {pathToAssembly}");
+            }
+
+            return Assembly.LoadFile(pathToAssembly);
+        }
+
+        public static Assembly GetMicrosoftCodeAnalysisAssembly()
+        {
+            var folder = GetFolderPath();
+
+            var pathToAssembly = Path.Combine(folder, "ManagedSourceCodeAnalysis.dll");
+
+            if (!File.Exists(pathToAssembly))
+            {
+                throw new FileNotFoundException($"Can't find file with provided name at path - ManagedSourceCodeAnalysis.dll");
+            }
+
+            return Assembly.LoadFile(pathToAssembly);
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -64,8 +141,8 @@ namespace Saritasa.Prettify.ConsoleApp
 
                     foreach (var projectAnalyzer in diagnostics)
                     {
-                        Log.Information("DiagnosticId {@id} - {message} in file {path}({row},{column})", projectAnalyzer.Id, projectAnalyzer.GetMessage(), GetFormattedFileName(projectAnalyzer.Location.GetLineSpan().Path)
-                            ,projectAnalyzer.Location.GetLineSpan().StartLinePosition.Line, projectAnalyzer.Location.GetLineSpan().StartLinePosition.Character);
+                        Log.Information("DiagnosticId {@id} - {message} in file {path}({row},{column})", projectAnalyzer.Id, projectAnalyzer.GetMessage(), GetFormattedFileName(projectAnalyzer.Location.GetLineSpan().Path),
+                            projectAnalyzer.Location.GetLineSpan().StartLinePosition.Line, projectAnalyzer.Location.GetLineSpan().StartLinePosition.Character);
                     }
 
                     if (options.Rules == null && options.Mode == Args.RunningMode.Fix)
@@ -237,11 +314,12 @@ namespace Saritasa.Prettify.ConsoleApp
                 });
         }
 
-        public string SolutionPath { get; set; }
-
-        public string[] Rules { get; set; }
-
-        public RunningMode Mode { get; set; }
+        public enum RunningMode
+        {
+            None,
+            Fix,
+            Stats
+        }
 
         public static string Usage => @"Usage: " + Environment.NewLine +
                                     "saritasa.prettify solution.sln [Options]" + Environment.NewLine +
@@ -252,86 +330,10 @@ namespace Saritasa.Prettify.ConsoleApp
                                     "Possible for usage only one key." + Environment.NewLine +
                                     "Example: saritasa.prettify solution.sln --rules=SA1633,SAXXXX --stat";
 
-        public enum RunningMode
-        {
-            None,
-            Fix,
-            Stats
-        }
-    }
+        public string SolutionPath { get; set; }
 
-    public class AssembliesHelper
-    {
-        public const string StyleCopAssemblyFolderKey = "StyleCopAssemblyFolder";
-        public const string StyleCopCodeFixesDllNameKey = "StyleCopCodeFixesDllName";
-        public const string StyleCopAnalyzersDllNameKey = "StyleCopAnalyzersDllName";
+        public string[] Rules { get; set; }
 
-
-        public static string GetFolderPath()
-        {
-            var folderValue = ConfigurationManager.AppSettings[StyleCopAssemblyFolderKey];
-            if (string.IsNullOrWhiteSpace(folderValue))
-            {
-                throw new ArgumentException($"Please specify folder in application settings with key {StyleCopAssemblyFolderKey}", nameof(folderValue));
-            }
-            if (!Directory.Exists(folderValue))
-            {
-                throw new DirectoryNotFoundException("Provided directory path for assemblies not found");
-            }
-
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderValue);
-        }
-
-        public static Assembly GetCodeFixAssembly()
-        {
-            var folder = GetFolderPath();
-
-            var codeFixAssemblyName = ConfigurationManager.AppSettings[StyleCopCodeFixesDllNameKey];
-            if (string.IsNullOrWhiteSpace(codeFixAssemblyName))
-            {
-                throw new ArgumentException($"Please specify dll name for codefixes in application settings with key {StyleCopCodeFixesDllNameKey}", nameof(codeFixAssemblyName));
-            }
-
-            var pathToAssembly = Path.Combine(folder, codeFixAssemblyName);
-            if (!File.Exists(pathToAssembly))
-            {
-                throw new FileNotFoundException($"Can't find file with provided name at path - {pathToAssembly}");
-            }
-
-            return Assembly.LoadFile(pathToAssembly);
-        }
-
-        public static Assembly GetAnalyzersAssembly()
-        {
-            var folder = GetFolderPath();
-
-            var assemblyName = ConfigurationManager.AppSettings[StyleCopAnalyzersDllNameKey];
-            if (string.IsNullOrWhiteSpace(assemblyName))
-            {
-                throw new ArgumentException($"Please specify dll name for analyzers in application settings with key {StyleCopAnalyzersDllNameKey}", nameof(assemblyName));
-            }
-
-            var pathToAssembly = Path.Combine(folder, assemblyName);
-            if (!File.Exists(pathToAssembly))
-            {
-                throw new FileNotFoundException($"Can't find file with provided name at path - {pathToAssembly}");
-            }
-
-            return Assembly.LoadFile(pathToAssembly);
-        }
-
-        public static Assembly GetMicrosoftCodeAnalysisAssembly()
-        {
-            var folder = GetFolderPath();
-
-            var pathToAssembly = Path.Combine(folder, "ManagedSourceCodeAnalysis.dll");
-
-            if (!File.Exists(pathToAssembly))
-            {
-                throw new FileNotFoundException($"Can't find file with provided name at path - ManagedSourceCodeAnalysis.dll");
-            }
-
-            return Assembly.LoadFile(pathToAssembly);
-        }
+        public RunningMode Mode { get; set; }
     }
 }
