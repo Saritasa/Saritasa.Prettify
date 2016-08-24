@@ -1,0 +1,9 @@
+﻿{
+    "Name":"Microsoft.VisualStudio.Telemetry.SqmUploader",
+    "Services":
+    {
+        "Upload":"api/Upload"
+    },
+    "OwinStartupAssemblyName":"Microsoft.VisualStudio.Telemetry.SqmUploader",
+    "OwinStartupClassName":"Microsoft.VisualStudio.Telemetry.SqmUploader.Startup"
+}
