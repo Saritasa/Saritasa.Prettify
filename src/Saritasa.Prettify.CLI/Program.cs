@@ -328,7 +328,7 @@ namespace Saritasa.Prettify.ConsoleApp
                                     "--stats - key indicates to print statistics" + Environment.NewLine +
                                     "--fix - key indicates to use code fix providers" + Environment.NewLine +
                                     "Possible for usage only one key." + Environment.NewLine +
-                                    "Example: saritasa.prettify solution.sln --rules=SA1633,SAXXXX --stat";
+                                    "Example: saritasa.prettify solution.sln --rules=SA1633,SAXXXX --stats";
 
         public string SolutionPath { get; set; }
 
