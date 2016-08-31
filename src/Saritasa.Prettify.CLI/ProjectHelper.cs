@@ -12,6 +12,9 @@ namespace Saritasa.Prettify.ConsoleApp
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.Diagnostics;
 
+    /// <summary>
+    /// Helper for "project" unit of workspace in terms of visual studio
+    /// </summary>
     public class ProjectHelper
     {
         public static async Task<ImmutableArray<Diagnostic>> GetProjectAnalyzerDiagnosticsAsync(ImmutableArray<DiagnosticAnalyzer> analyzers, Project project, bool force, CancellationToken cancellationToken = default(CancellationToken))

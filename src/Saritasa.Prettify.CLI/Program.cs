@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Saritasa, LLC
 
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 namespace Saritasa.Prettify.ConsoleApp
 {
     using System;
@@ -113,6 +115,11 @@ namespace Saritasa.Prettify.ConsoleApp
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
 
                 var options = new Args(args);
+                if (options.ShowVersion)
+                {
+                    Log.Information($"Saritasa Prettify - {GetVersionOfExecutionAssembly()}");
+                }
+
                 var styleCopAnalyzerAssembly = AssembliesHelper.GetAnalyzersAssembly();
                 var styleCopFixersAssembly = AssembliesHelper.GetCodeFixAssembly();
                 var microsoftCodeAnalysisAssembly = AssembliesHelper.GetMicrosoftCodeAnalysisAssembly();
@@ -176,6 +183,7 @@ namespace Saritasa.Prettify.ConsoleApp
                             if (equivalenceGroups.Count() > 1)
                             {
                                 Log.Warning("Allowed only one equivalence group for fix");
+                                continue;
                             }
 
                             var operations = fix.GetOperationsAsync().Result;
@@ -253,14 +261,20 @@ namespace Saritasa.Prettify.ConsoleApp
 
         private static string GetFormattedFileName(string input)
             => !string.IsNullOrWhiteSpace(input) ? "..\\" + Path.GetFileName(input) : string.Empty;
+
+        private static string GetVersionOfExecutionAssembly() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
 
+    /// <summary>
+    /// Class related to arguments parsing
+    /// </summary>
     class Args
     {
         public const string Stats = "--stats";
         public const string Fix = "--fix";
         public const string SolutionFileExtension = ".sln";
         public Regex rules = new Regex("^--((?i)rules=)(?<rules>[A-z0-9,_]+)", RegexOptions.Compiled | RegexOptions.Singleline);
+        public Regex version = new Regex("^((?i)-v|--version)$", RegexOptions.Compiled | RegexOptions.Singleline);
 
         public Args(string[] args)
         {
@@ -279,6 +293,10 @@ namespace Saritasa.Prettify.ConsoleApp
                     if (Regex.IsMatch(args[i], $"(?i){Fix}"))
                     {
                         Mode = RunningMode.Fix;
+                    }
+                    if (version.IsMatch(args[i]))
+                    {
+                        ShowVersion = true;
                     }
                     if (rules.IsMatch(args[i]))
                     {
@@ -335,5 +353,7 @@ namespace Saritasa.Prettify.ConsoleApp
         public string[] Rules { get; set; }
 
         public RunningMode Mode { get; set; }
+
+        public bool ShowVersion { get; set; }
     }
 }

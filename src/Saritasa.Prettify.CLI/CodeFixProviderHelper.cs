@@ -9,6 +9,9 @@ namespace Saritasa.Prettify.ConsoleApp
     using System.Reflection;
     using Microsoft.CodeAnalysis.CodeFixes;
 
+    /// <summary>
+    /// Helper for <see cref="CodeFixProvider"/>
+    /// </summary>
     public class CodeFixProviderHelper
     {
         public static ImmutableDictionary<string, ImmutableList<CodeFixProvider>> GetFixProviders(Assembly[] assemblies)

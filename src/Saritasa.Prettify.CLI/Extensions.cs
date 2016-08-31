@@ -9,6 +9,9 @@ namespace Saritasa.Prettify.ConsoleApp
     using System.Text;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Extensions for collections
+    /// </summary>
     internal static class Extensions
     {
         internal static void AddToInnerList<TKey, TValue>(this IDictionary<TKey, ImmutableList<TValue>> dictionary,

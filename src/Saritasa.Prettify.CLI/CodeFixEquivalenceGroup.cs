@@ -13,6 +13,9 @@ namespace Saritasa.Prettify.ConsoleApp
     using Microsoft.CodeAnalysis.CodeActions;
     using Microsoft.CodeAnalysis.CodeFixes;
 
+    /// <summary>
+    /// Contains data for comparing groups, we cannot fix same groups for same time
+    /// </summary>
     internal class CodeFixEquivalenceGroup
     {
         private CodeFixEquivalenceGroup(

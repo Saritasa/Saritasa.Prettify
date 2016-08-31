@@ -12,6 +12,9 @@ namespace Saritasa.Prettify.ConsoleApp
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CodeFixes;
 
+    /// <summary>
+    /// Diagnostic provider for fixes
+    /// </summary>
     internal sealed class FixDiagnosticProvider : FixAllContext.DiagnosticProvider
     {
         private readonly ImmutableDictionary<ProjectId, ImmutableDictionary<string, ImmutableArray<Diagnostic>>> documentDiagnostics;
