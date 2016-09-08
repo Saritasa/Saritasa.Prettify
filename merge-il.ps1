@@ -6,14 +6,16 @@
 param(
     [string]$pathToExe = "\src\Saritasa.Prettify.Cli\bin\Debug\Saritasa.Prettify.ConsoleApp.exe",
     [string]$dllsToMergeDirectory = "\src\Saritasa.Prettify.Cli\bin\Debug\",
-    [string]$outName = "output.exe"
+    [string]$outName = "Saritasa.Prettify.ConsoleApp.Merged.exe"
 )
 
+$mergingFileName = [System.IO.Path]::GetFileName($pathToExe)
 
 $root = $MyInvocation.MyCommand.Definition
 $directory = [string][System.IO.Path]::GetDirectoryName($root)
 $directory = $directory.Replace(" ", "` ")
 $ilMergeFile = "$directory\tools\ilmerge\ILMerge.exe"
+$ilMergeName = [System.IO.Path]::GetFileName($ilMergeFile)
 
  Write-Host "Current directory: $directory" -ForegroundColor "Green"
  Write-Host "ILMerge.exe location : $ilMergeFile" -ForegroundColor "Green"
@@ -51,15 +53,54 @@ $ilMergeFile = "$directory\tools\ilmerge\ILMerge.exe"
 
 $pathsForDllsToMerge = [System.IO.Directory]::EnumerateFiles($dllsToMergeDirectory, "*.dll")
 
-$command = "/log /out:$outName $pathToExe "
+$tempPath = Join-Path $PSScriptRoot "Temp"
 
-$dllsPathJoined = [System.String]::Join('" "', $pathsForDllsToMerge)
+[System.IO.Directory]::CreateDirectory($tempPath)
+
+$dllsPathJoined = ''
+
+foreach($dll in $pathsForDllsToMerge)
+{
+    $dllName = [System.IO.Path]::GetFileName($dll)
+    $tempDllPath = $tempPath + "\" + $dllName
+    [System.IO.File]::Copy($dll, $tempDllPath, $true)
+
+    $dllsPathJoined += ' "' + $tempDllPath + '" '
+}
+
+$ilMergeTempPath = Join-Path $tempPath $ilMergeName 
+
+[System.IO.File]::Copy($ilMergeFile, $ilMergeTempPath, $true)
+
+$pathToMergingExe = Join-Path $tempPath $mergingFileName
+
+[System.IO.File]::Copy($pathToExe, $pathToMergingExe, $true)
+
+$fullPathOfMergingExe = [System.IO.Path]::GetFullPath($pathToExe)
+
+$dllsPathJoined = '"' + $fullPathOfMergingExe + '"' + $dllsPathJoined
+
+$tempOut = Join-Path $tempPath $outName
+
+$command = '/ndebug /copyattrs /targetplatform:4.0,"C:\Windows\Microsoft.NET\Framework64\v4.0.30319" /out:"' + $tempOut + '" '
+
 
 $command += $dllsPathJoined
 
+$command = ' ' + $command
+
 Write-Host "Command which will executed $command" -ForegroundColor "Blue"
 
-&"$ilMergeFile" $command 
+Set-Location $tempPath
+
+Invoke-Expression "& `.\ILMerge.exe $command"
+
+$pathToCopy = Join-Path $PSScriptRoot $mergingFileName
+
+Copy-Item $tempOut $pathToCopy
+
+
+
 
 
 
