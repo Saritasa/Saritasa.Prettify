@@ -80,20 +80,6 @@ namespace Saritasa.Prettify.ConsoleApp
 
             return Assembly.LoadFile(pathToAssembly);
         }
-
-        public static Assembly GetMicrosoftCodeAnalysisAssembly()
-        {
-            var folder = GetFolderPath();
-
-            var pathToAssembly = Path.Combine(folder, "ManagedSourceCodeAnalysis.dll");
-
-            if (!File.Exists(pathToAssembly))
-            {
-                throw new FileNotFoundException($"Can't find file with provided name at path - ManagedSourceCodeAnalysis.dll");
-            }
-
-            return Assembly.LoadFile(pathToAssembly);
-        }
     }
 
     class Program
@@ -122,11 +108,10 @@ namespace Saritasa.Prettify.ConsoleApp
 
                 var styleCopAnalyzerAssembly = AssembliesHelper.GetAnalyzersAssembly();
                 var styleCopFixersAssembly = AssembliesHelper.GetCodeFixAssembly();
-                var microsoftCodeAnalysisAssembly = AssembliesHelper.GetMicrosoftCodeAnalysisAssembly();
 
-                var analyzers = DiagnosticHelper.GetAnalyzersFromAssemblies(new[] { styleCopAnalyzerAssembly, styleCopFixersAssembly, microsoftCodeAnalysisAssembly });
+                var analyzers = DiagnosticHelper.GetAnalyzersFromAssemblies(new[] { styleCopAnalyzerAssembly, styleCopFixersAssembly });
                 var codeFixes =
-                    CodeFixProviderHelper.GetFixProviders(new[] { styleCopAnalyzerAssembly, styleCopFixersAssembly, microsoftCodeAnalysisAssembly })
+                    CodeFixProviderHelper.GetFixProviders(new[] { styleCopAnalyzerAssembly, styleCopFixersAssembly })
                     .Where(x => options.Rules == null || options.Rules.Contains(x.Key))
                             .ToList();
 
