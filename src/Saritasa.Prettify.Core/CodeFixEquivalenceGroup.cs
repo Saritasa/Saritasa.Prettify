@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Saritasa, LLC
 
-namespace Saritasa.Prettify.ConsoleApp
+namespace Saritasa.Prettify.Core
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Saritasa.Prettify.ConsoleApp
     /// <summary>
     /// Contains data for comparing groups, we cannot fix same groups for same time
     /// </summary>
-    internal class CodeFixEquivalenceGroup
+    public class CodeFixEquivalenceGroup
     {
         private CodeFixEquivalenceGroup(
             string equivalenceKey,
@@ -50,7 +50,7 @@ namespace Saritasa.Prettify.ConsoleApp
 
         internal int NumberOfDiagnostics { get; }
 
-        internal static async Task<ImmutableArray<CodeFixEquivalenceGroup>> CreateAsync(CodeFixProvider codeFixProvider, ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> allDiagnostics,
+        public static async Task<ImmutableArray<CodeFixEquivalenceGroup>> CreateAsync(CodeFixProvider codeFixProvider, ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> allDiagnostics,
             Solution solution, CancellationToken cancellationToken = default(CancellationToken))
         {
             var fixAllProvider = codeFixProvider.GetFixAllProvider();
@@ -130,7 +130,7 @@ namespace Saritasa.Prettify.ConsoleApp
             return groups.ToImmutableArray();
         }
 
-        internal async Task<ImmutableArray<CodeActionOperation>> GetOperationsAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ImmutableArray<CodeActionOperation>> GetOperationsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             Diagnostic diagnostic = this.DocumentDiagnosticsToFix.Values.SelectMany(i => i.Values).Concat(this.ProjectDiagnosticsToFix.Values).First().First();
             Document document = this.Solution.GetDocument(diagnostic.Location.SourceTree);
@@ -141,6 +141,11 @@ namespace Saritasa.Prettify.ConsoleApp
             var context = new FixAllContext(document, this.CodeFixProvider, FixAllScope.Solution, this.CodeFixEquivalenceKey, diagnosticIds, diagnosticsProvider, cancellationToken);
 
             CodeAction action = await this.FixAllProvider.GetFixAsync(context).ConfigureAwait(false);
+            if(action == null)
+            {
+                return Enumerable.Empty<CodeActionOperation>()
+                    .ToImmutableArray();
+            }
 
             return await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
         }

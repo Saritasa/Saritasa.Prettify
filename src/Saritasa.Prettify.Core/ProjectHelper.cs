@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Saritasa, LLC
 
-namespace Saritasa.Prettify.ConsoleApp
+namespace Saritasa.Prettify.Core
 {
     using System;
     using System.Collections.Generic;

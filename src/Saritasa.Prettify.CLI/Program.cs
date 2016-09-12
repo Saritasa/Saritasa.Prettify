@@ -1,86 +1,21 @@
 ﻿// Copyright (c) Saritasa, LLC
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace Saritasa.Prettify.ConsoleApp
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.Configuration;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CodeFixes;
     using Microsoft.CodeAnalysis.Diagnostics;
     using Microsoft.CodeAnalysis.MSBuild;
     using Serilog;
-
-    public class AssembliesHelper
-    {
-        public const string StyleCopAssemblyFolderKey = "StyleCopAssemblyFolder";
-        public const string StyleCopCodeFixesDllNameKey = "StyleCopCodeFixesDllName";
-        public const string StyleCopAnalyzersDllNameKey = "StyleCopAnalyzersDllName";
-
-
-        public static string GetFolderPath()
-        {
-            var folderValue = ConfigurationManager.AppSettings[StyleCopAssemblyFolderKey];
-            if (string.IsNullOrWhiteSpace(folderValue))
-            {
-                throw new ArgumentException($"Please specify folder in application settings with key {StyleCopAssemblyFolderKey}", nameof(folderValue));
-            }
-            if (!Directory.Exists(folderValue))
-            {
-                throw new DirectoryNotFoundException("Provided directory path for assemblies not found");
-            }
-
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderValue);
-        }
-
-        public static Assembly GetCodeFixAssembly()
-        {
-            var folder = GetFolderPath();
-
-            var codeFixAssemblyName = ConfigurationManager.AppSettings[StyleCopCodeFixesDllNameKey];
-            if (string.IsNullOrWhiteSpace(codeFixAssemblyName))
-            {
-                throw new ArgumentException($"Please specify dll name for codefixes in application settings with key {StyleCopCodeFixesDllNameKey}", nameof(codeFixAssemblyName));
-            }
-
-            var pathToAssembly = Path.Combine(folder, codeFixAssemblyName);
-            if (!File.Exists(pathToAssembly))
-            {
-                throw new FileNotFoundException($"Can't find file with provided name at path - {pathToAssembly}");
-            }
-
-            return Assembly.LoadFile(pathToAssembly);
-        }
-
-        public static Assembly GetAnalyzersAssembly()
-        {
-            var folder = GetFolderPath();
-
-            var assemblyName = ConfigurationManager.AppSettings[StyleCopAnalyzersDllNameKey];
-            if (string.IsNullOrWhiteSpace(assemblyName))
-            {
-                throw new ArgumentException($"Please specify dll name for analyzers in application settings with key {StyleCopAnalyzersDllNameKey}", nameof(assemblyName));
-            }
-
-            var pathToAssembly = Path.Combine(folder, assemblyName);
-            if (!File.Exists(pathToAssembly))
-            {
-                throw new FileNotFoundException($"Can't find file with provided name at path - {pathToAssembly}");
-            }
-
-            return Assembly.LoadFile(pathToAssembly);
-        }
-    }
+    using Core;
 
     class Program
     {
@@ -146,8 +81,7 @@ namespace Saritasa.Prettify.ConsoleApp
 
                     if (options.Mode == Args.RunningMode.Fix)
                     {
-                        var diagnistics = GetAnalyzerDiagnosticsAsync(solution, analyzers, true).Result;
-
+                        var diagnistics = DiagnosticHelper.GetAnalyzerDiagnosticsAsync(solution, analyzers, true).Result;
 
                         foreach (var keyValuePair in codeFixes)
                         {
@@ -217,31 +151,6 @@ namespace Saritasa.Prettify.ConsoleApp
                 });
 
             return assembly;
-        }
-
-        private static async Task<ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>>> GetAnalyzerDiagnosticsAsync(Solution solution,
-            ImmutableArray<DiagnosticAnalyzer> analyzers, bool force, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            List<KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>> projectDiagnosticTasks = new List<KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>>();
-
-            // Make sure we analyze the projects in parallel
-            foreach (var project in solution.Projects)
-            {
-                if (project.Language != LanguageNames.CSharp)
-                {
-                    continue;
-                }
-
-                projectDiagnosticTasks.Add(new KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>(project.Id, ProjectHelper.GetProjectAnalyzerDiagnosticsAsync(analyzers, project, force)));
-            }
-
-            ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>>.Builder projectDiagnosticBuilder = ImmutableDictionary.CreateBuilder<ProjectId, ImmutableArray<Diagnostic>>();
-            foreach (var task in projectDiagnosticTasks)
-            {
-                projectDiagnosticBuilder.Add(task.Key, await task.Value.ConfigureAwait(false));
-            }
-
-            return projectDiagnosticBuilder.ToImmutable();
         }
 
         private static string GetFormattedFileName(string input)

@@ -175,13 +175,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeFixEquivalenceGroup.cs" />
-    <Compile Include="CodeFixProviderHelper.cs" />
-    <Compile Include="DiagnosticHelper.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="FixDiagnosticProvider.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ProjectHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -193,29 +187,11 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="SCAnalyzersLibraries\Newtonsoft.Json.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SCAnalyzersLibraries\StyleCop.Analyzers.CodeFixes.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SCAnalyzersLibraries\StyleCop.Analyzers.CodeFixes.pdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SCAnalyzersLibraries\StyleCop.Analyzers.CodeFixes.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SCAnalyzersLibraries\StyleCop.Analyzers.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SCAnalyzersLibraries\StyleCop.Analyzers.pdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SCAnalyzersLibraries\StyleCop.Analyzers.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\Saritasa.Prettify.Core\Saritasa.Prettify.Core.csproj">
+      <Project>{4f3e1e5e-62c7-43d8-bb41-db739b8b2dde}</Project>
+      <Name>Saritasa.Prettify.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

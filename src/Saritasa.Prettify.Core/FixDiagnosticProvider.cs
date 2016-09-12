@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Saritasa, LLC
 
-namespace Saritasa.Prettify.ConsoleApp
+namespace Saritasa.Prettify.Core
 {
     using System;
     using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace Saritasa.Prettify.ConsoleApp
     /// <summary>
     /// Diagnostic provider for fixes
     /// </summary>
-    internal sealed class FixDiagnosticProvider : FixAllContext.DiagnosticProvider
+    public sealed class FixDiagnosticProvider : FixAllContext.DiagnosticProvider
     {
         private readonly ImmutableDictionary<ProjectId, ImmutableDictionary<string, ImmutableArray<Diagnostic>>> documentDiagnostics;
         private readonly ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> projectDiagnostics;
