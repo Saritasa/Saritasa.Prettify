@@ -43,6 +43,7 @@
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.currentStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.openHelpUrlButton = new System.Windows.Forms.Button();
+            this.autoCompleteTextBox = new System.Windows.Forms.TextBox();
             this.OptionsGroupBox.SuspendLayout();
             this.outputGroupBox.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -58,7 +59,7 @@
             this.selectSolutionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.selectSolutionButton.Location = new System.Drawing.Point(354, 28);
+            this.selectSolutionButton.Location = new System.Drawing.Point(354, 30);
             this.selectSolutionButton.Name = "selectSolutionButton";
             this.selectSolutionButton.Size = new System.Drawing.Size(123, 30);
             this.selectSolutionButton.TabIndex = 0;
@@ -83,6 +84,7 @@
             this.OptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.OptionsGroupBox.Controls.Add(this.autoCompleteTextBox);
             this.OptionsGroupBox.Controls.Add(this.openHelpUrlButton);
             this.OptionsGroupBox.Controls.Add(this.viewDescriptionButton);
             this.OptionsGroupBox.Controls.Add(this.runButton);
@@ -99,7 +101,7 @@
             // viewDescriptionButton
             // 
             this.viewDescriptionButton.Enabled = false;
-            this.viewDescriptionButton.Location = new System.Drawing.Point(20, 260);
+            this.viewDescriptionButton.Location = new System.Drawing.Point(20, 255);
             this.viewDescriptionButton.Name = "viewDescriptionButton";
             this.viewDescriptionButton.Size = new System.Drawing.Size(120, 30);
             this.viewDescriptionButton.TabIndex = 4;
@@ -141,9 +143,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.issuesChecked.FormattingEnabled = true;
-            this.issuesChecked.Location = new System.Drawing.Point(20, 54);
+            this.issuesChecked.Location = new System.Drawing.Point(20, 69);
             this.issuesChecked.Name = "issuesChecked";
-            this.issuesChecked.Size = new System.Drawing.Size(424, 199);
+            this.issuesChecked.Size = new System.Drawing.Size(424, 184);
             this.issuesChecked.TabIndex = 1;
             this.issuesChecked.SelectedIndexChanged += new System.EventHandler(this.issuesChecked_SelectedIndexChanged);
             // 
@@ -169,7 +171,7 @@
             this.outputGroupBox.Controls.Add(this.outputTextBox);
             this.outputGroupBox.Location = new System.Drawing.Point(13, 397);
             this.outputGroupBox.Name = "outputGroupBox";
-            this.outputGroupBox.Size = new System.Drawing.Size(464, 329);
+            this.outputGroupBox.Size = new System.Drawing.Size(464, 338);
             this.outputGroupBox.TabIndex = 3;
             this.outputGroupBox.TabStop = false;
             this.outputGroupBox.Text = "Output";
@@ -179,7 +181,7 @@
             this.clearOutputButton.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.clearOutputButton.Location = new System.Drawing.Point(369, 277);
+            this.clearOutputButton.Location = new System.Drawing.Point(369, 286);
             this.clearOutputButton.Name = "clearOutputButton";
             this.clearOutputButton.Size = new System.Drawing.Size(75, 30);
             this.clearOutputButton.TabIndex = 5;
@@ -199,7 +201,7 @@
             this.outputTextBox.Name = "outputTextBox";
             this.outputTextBox.ReadOnly = true;
             this.outputTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.outputTextBox.Size = new System.Drawing.Size(437, 251);
+            this.outputTextBox.Size = new System.Drawing.Size(437, 260);
             this.outputTextBox.TabIndex = 0;
             // 
             // statusStrip
@@ -220,13 +222,21 @@
             // openHelpUrlButton
             // 
             this.openHelpUrlButton.Enabled = false;
-            this.openHelpUrlButton.Location = new System.Drawing.Point(147, 261);
+            this.openHelpUrlButton.Location = new System.Drawing.Point(146, 255);
             this.openHelpUrlButton.Name = "openHelpUrlButton";
             this.openHelpUrlButton.Size = new System.Drawing.Size(104, 30);
             this.openHelpUrlButton.TabIndex = 5;
             this.openHelpUrlButton.Text = "Open Help Url";
             this.openHelpUrlButton.UseVisualStyleBackColor = true;
             this.openHelpUrlButton.Click += new System.EventHandler(this.openHelpUrlButton_Click);
+            // 
+            // autoCompleteTextBox
+            // 
+            this.autoCompleteTextBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.autoCompleteTextBox.Location = new System.Drawing.Point(20, 43);
+            this.autoCompleteTextBox.Name = "autoCompleteTextBox";
+            this.autoCompleteTextBox.Size = new System.Drawing.Size(424, 20);
+            this.autoCompleteTextBox.TabIndex = 6;
             // 
             // MainForm
             // 
@@ -271,6 +281,7 @@
         private System.Windows.Forms.Button clearOutputButton;
         private System.Windows.Forms.Button viewDescriptionButton;
         private System.Windows.Forms.Button openHelpUrlButton;
+        private System.Windows.Forms.TextBox autoCompleteTextBox;
     }
 }
 

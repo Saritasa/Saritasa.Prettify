@@ -34,6 +34,26 @@ namespace Saritasa.Prettify.UI
             styleCopAnalyzerAssembly = AssembliesHelper.GetAnalyzersAssembly();
             styleCopFixersAssembly = AssembliesHelper.GetCodeFixAssembly();
             SeedCheckList();
+            var autoCompleteSource = new AutoCompleteStringCollection();
+            autoCompleteSource.AddRange(analyzers.SelectMany(x => x.SupportedDiagnostics).Select(x => $"{x.Id}: {x.Title}")
+                .ToArray());
+            this.autoCompleteTextBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            this.autoCompleteTextBox.AutoCompleteCustomSource = autoCompleteSource;
+            this.autoCompleteTextBox.TextChanged += AutoCompleteTextBox_TextChanged;
+        }
+
+        private void AutoCompleteTextBox_TextChanged(object sender, EventArgs e)
+        {
+            var selectedAnalyzers = analyzers.SelectMany(x => x.SupportedDiagnostics)
+                .Select(x => $"{x.Id}: {x.Title}")
+                .Where(x => x.Contains(this.autoCompleteTextBox.Text))
+                .ToArray();
+
+            this.issuesChecked.Items.Clear();
+            this.issuesChecked.Items.AddRange(selectedAnalyzers);
+
+            this.selectAllCheckBox.Checked = false;
+            this.fixIssues.Checked = false;
         }
 
         private Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
