@@ -28,16 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.openSolutionDialog = new System.Windows.Forms.OpenFileDialog();
             this.selectSolutionButton = new System.Windows.Forms.Button();
             this.selectedSolutionTextBox = new System.Windows.Forms.TextBox();
             this.OptionsGroupBox = new System.Windows.Forms.GroupBox();
+            this.issuesTreeView = new System.Windows.Forms.TreeView();
             this.autoCompleteTextBox = new System.Windows.Forms.TextBox();
             this.openHelpUrlButton = new System.Windows.Forms.Button();
-            this.viewDescriptionButton = new System.Windows.Forms.Button();
             this.runButton = new System.Windows.Forms.Button();
             this.selectAllCheckBox = new System.Windows.Forms.CheckBox();
-            this.issuesChecked = new System.Windows.Forms.CheckedListBox();
             this.fixIssues = new System.Windows.Forms.CheckBox();
             this.outputGroupBox = new System.Windows.Forms.GroupBox();
             this.clearOutputButton = new System.Windows.Forms.Button();
@@ -63,7 +63,7 @@
             this.selectSolutionButton.TabIndex = 0;
             this.selectSolutionButton.Text = "Open Solution";
             this.selectSolutionButton.UseVisualStyleBackColor = true;
-            this.selectSolutionButton.Click += new System.EventHandler(this.selectSolutionButton_Click);
+            this.selectSolutionButton.Click += new System.EventHandler(this.SelectSolutionButton_Click);
             // 
             // selectedSolutionTextBox
             // 
@@ -82,12 +82,11 @@
             this.OptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.OptionsGroupBox.Controls.Add(this.issuesTreeView);
             this.OptionsGroupBox.Controls.Add(this.autoCompleteTextBox);
             this.OptionsGroupBox.Controls.Add(this.openHelpUrlButton);
-            this.OptionsGroupBox.Controls.Add(this.viewDescriptionButton);
             this.OptionsGroupBox.Controls.Add(this.runButton);
             this.OptionsGroupBox.Controls.Add(this.selectAllCheckBox);
-            this.OptionsGroupBox.Controls.Add(this.issuesChecked);
             this.OptionsGroupBox.Controls.Add(this.fixIssues);
             this.OptionsGroupBox.Location = new System.Drawing.Point(13, 78);
             this.OptionsGroupBox.Name = "OptionsGroupBox";
@@ -95,6 +94,16 @@
             this.OptionsGroupBox.TabIndex = 2;
             this.OptionsGroupBox.TabStop = false;
             this.OptionsGroupBox.Text = "Options";
+            // 
+            // issuesTreeView
+            // 
+            this.issuesTreeView.CheckBoxes = true;
+            this.issuesTreeView.Location = new System.Drawing.Point(20, 70);
+            this.issuesTreeView.Name = "issuesTreeView";
+            this.issuesTreeView.Size = new System.Drawing.Size(508, 179);
+            this.issuesTreeView.TabIndex = 7;
+            this.issuesTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.IssuesTreeView_AfterCheck);
+            this.issuesTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.IssuesTreeView_AfterSelect);
             // 
             // autoCompleteTextBox
             // 
@@ -108,24 +117,13 @@
             // openHelpUrlButton
             // 
             this.openHelpUrlButton.Enabled = false;
-            this.openHelpUrlButton.Location = new System.Drawing.Point(146, 255);
+            this.openHelpUrlButton.Location = new System.Drawing.Point(20, 255);
             this.openHelpUrlButton.Name = "openHelpUrlButton";
             this.openHelpUrlButton.Size = new System.Drawing.Size(104, 30);
             this.openHelpUrlButton.TabIndex = 5;
             this.openHelpUrlButton.Text = "Open Help Url";
             this.openHelpUrlButton.UseVisualStyleBackColor = true;
-            this.openHelpUrlButton.Click += new System.EventHandler(this.openHelpUrlButton_Click);
-            // 
-            // viewDescriptionButton
-            // 
-            this.viewDescriptionButton.Enabled = false;
-            this.viewDescriptionButton.Location = new System.Drawing.Point(20, 255);
-            this.viewDescriptionButton.Name = "viewDescriptionButton";
-            this.viewDescriptionButton.Size = new System.Drawing.Size(120, 30);
-            this.viewDescriptionButton.TabIndex = 4;
-            this.viewDescriptionButton.Text = "View Description";
-            this.viewDescriptionButton.UseVisualStyleBackColor = true;
-            this.viewDescriptionButton.Click += new System.EventHandler(this.viewDescriptionButton_Click);
+            this.openHelpUrlButton.Click += new System.EventHandler(this.OpenHelpUrlButton_Click);
             // 
             // runButton
             // 
@@ -138,7 +136,7 @@
             this.runButton.TabIndex = 3;
             this.runButton.Text = "Run!";
             this.runButton.UseVisualStyleBackColor = true;
-            this.runButton.Click += new System.EventHandler(this.runButton_Click);
+            this.runButton.Click += new System.EventHandler(this.RunButton_Click);
             // 
             // selectAllCheckBox
             // 
@@ -152,19 +150,7 @@
             this.selectAllCheckBox.TabIndex = 2;
             this.selectAllCheckBox.Text = "Select all?";
             this.selectAllCheckBox.UseVisualStyleBackColor = true;
-            this.selectAllCheckBox.CheckedChanged += new System.EventHandler(this.selectAllCheckBox_CheckedChanged);
-            // 
-            // issuesChecked
-            // 
-            this.issuesChecked.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.issuesChecked.FormattingEnabled = true;
-            this.issuesChecked.Location = new System.Drawing.Point(20, 69);
-            this.issuesChecked.Name = "issuesChecked";
-            this.issuesChecked.Size = new System.Drawing.Size(508, 184);
-            this.issuesChecked.TabIndex = 1;
-            this.issuesChecked.SelectedIndexChanged += new System.EventHandler(this.issuesChecked_SelectedIndexChanged);
+            this.selectAllCheckBox.CheckedChanged += new System.EventHandler(this.SelectAllCheckBox_CheckedChanged);
             // 
             // fixIssues
             // 
@@ -202,7 +188,7 @@
             this.clearOutputButton.TabIndex = 5;
             this.clearOutputButton.Text = "Clear Output";
             this.clearOutputButton.UseVisualStyleBackColor = true;
-            this.clearOutputButton.Click += new System.EventHandler(this.clearOutputButton_Click);
+            this.clearOutputButton.Click += new System.EventHandler(this.ClearOutputButton_Click);
             // 
             // outputTextBox
             // 
@@ -246,6 +232,7 @@
             this.Controls.Add(this.selectedSolutionTextBox);
             this.Controls.Add(this.selectSolutionButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "Saritasa Prettify";
@@ -266,7 +253,6 @@
         private System.Windows.Forms.Button selectSolutionButton;
         private System.Windows.Forms.TextBox selectedSolutionTextBox;
         private System.Windows.Forms.GroupBox OptionsGroupBox;
-        private System.Windows.Forms.CheckedListBox issuesChecked;
         private System.Windows.Forms.CheckBox fixIssues;
         private System.Windows.Forms.GroupBox outputGroupBox;
         private System.Windows.Forms.StatusStrip statusStrip;
@@ -275,9 +261,9 @@
         private System.Windows.Forms.Button runButton;
         private System.Windows.Forms.TextBox outputTextBox;
         private System.Windows.Forms.Button clearOutputButton;
-        private System.Windows.Forms.Button viewDescriptionButton;
         private System.Windows.Forms.Button openHelpUrlButton;
         private System.Windows.Forms.TextBox autoCompleteTextBox;
+        private System.Windows.Forms.TreeView issuesTreeView;
     }
 }
 

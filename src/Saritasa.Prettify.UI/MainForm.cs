@@ -8,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -16,6 +17,7 @@ using System.Windows.Forms;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
 using Saritasa.Prettify.Core;
+using Saritasa.Prettify.UI.Utilities;
 
 namespace Saritasa.Prettify.UI
 {
@@ -26,6 +28,47 @@ namespace Saritasa.Prettify.UI
         private Assembly styleCopFixersAssembly;
         private string selectedDiagnosticId = string.Empty;
         private ImmutableArray<DiagnosticAnalyzer> analyzers;
+        private HashSet<string> checkedItems = new HashSet<string>();
+
+        private const int TVIF_STATE = 0x8;
+        private const int TVIS_STATEIMAGEMASK = 0xF000;
+        private const int TV_FIRST = 0x1100;
+        private const int TVM_SETITEM = TV_FIRST + 63;
+
+#pragma warning disable SA1307
+        [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Auto)]
+        private struct TVITEM
+        {
+            public int mask;
+            public IntPtr hItem;
+            public int state;
+            public int stateMask;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string lpszText;
+            public int cchTextMax;
+            public int iImage;
+            public int iSelectedImage;
+            public int cChildren;
+            public IntPtr lParam;
+        }
+#pragma warning restore SA1307
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam,
+                                                 ref TVITEM lParam);
+
+        /// <summary>
+        /// Hides the checkbox for the specified node on a TreeView control.
+        /// </summary>
+        private void HideCheckBox(TreeView tvw, TreeNode node)
+        {
+            var tvi = new TVITEM();
+            tvi.hItem = node.Handle;
+            tvi.mask = TVIF_STATE;
+            tvi.stateMask = TVIS_STATEIMAGEMASK;
+            tvi.state = 0;
+            SendMessage(tvw.Handle, TVM_SETITEM, IntPtr.Zero, ref tvi);
+        }
 
         public MainForm()
         {
@@ -40,17 +83,13 @@ namespace Saritasa.Prettify.UI
             this.autoCompleteTextBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
             this.autoCompleteTextBox.AutoCompleteCustomSource = autoCompleteSource;
             this.autoCompleteTextBox.TextChanged += AutoCompleteTextBox_TextChanged;
+            this.Text += $" {ApplicationVersionUtility.GetVersion()}";
         }
 
         private void AutoCompleteTextBox_TextChanged(object sender, EventArgs e)
         {
-            var selectedAnalyzers = analyzers.SelectMany(x => x.SupportedDiagnostics)
-                .Select(x => $"{x.Id}: {x.Title}")
-                .Where(x => x.Contains(this.autoCompleteTextBox.Text))
-                .ToArray();
-
-            this.issuesChecked.Items.Clear();
-            this.issuesChecked.Items.AddRange(selectedAnalyzers);
+            this.issuesTreeView.Nodes.Clear();
+            SeedCheckList(this.autoCompleteTextBox.Text);
 
             this.selectAllCheckBox.Checked = false;
             this.fixIssues.Checked = false;
@@ -82,7 +121,7 @@ namespace Saritasa.Prettify.UI
             return assembly;
         }
 
-        private void selectSolutionButton_Click(object sender, EventArgs e)
+        private void SelectSolutionButton_Click(object sender, EventArgs e)
         {
             var dialog = this.openSolutionDialog.ShowDialog();
             if (dialog == DialogResult.OK)
@@ -102,23 +141,68 @@ namespace Saritasa.Prettify.UI
             }
         }
 
-        private void SeedCheckList()
+        private void SeedCheckList(string filterText = "")
         {
             analyzers = DiagnosticHelper.GetAnalyzersFromAssemblies(new[] { styleCopAnalyzerAssembly, styleCopFixersAssembly });
             foreach (var analyzer in analyzers)
             {
                 foreach (var diagnostic in analyzer.SupportedDiagnostics)
                 {
-                    this.issuesChecked.Items.Add($"{diagnostic.Id}: {diagnostic.Title}");
+                    var node = this.issuesTreeView.Nodes[diagnostic.Category];
+                    var text = $"{diagnostic.Id}: {diagnostic.Title}";
+                    if (!string.IsNullOrWhiteSpace(filterText) && !text.Contains(filterText) && !checkedItems.Contains(text))
+                    {
+                        continue;
+                    }
+                    if (node == null)
+                    {
+                        node = new TreeNode
+                        {
+                            Text = diagnostic.Category,
+                            Checked = false,
+                            Name = diagnostic.Category
+                        };
+                        this.issuesTreeView.Nodes.Add(node);
+                    }
+
+                    node.Nodes.Add(new TreeNode
+                    {
+                        Text = text,
+                        Checked = checkedItems.Contains(text)
+                    });
                 }
             }
+
+            if (this.issuesTreeView.Nodes.Count > 0)
+            {
+                HideCheckBox(this.issuesTreeView, this.issuesTreeView.Nodes[0]);
+            }
+
+            foreach (var node in this.issuesTreeView.Nodes.OfType<TreeNode>())
+            {
+                HideCheckBox(this.issuesTreeView, node);
+            }
+
+            this.issuesTreeView.Refresh();
         }
 
-        private void selectAllCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void SelectAllCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            for (int i = 0; i < this.issuesChecked.Items.Count; i++)
+            var senderTyped = sender as CheckBox;
+            foreach (TreeNodeCollection nodes in issuesTreeView.Nodes.OfType<TreeNode>().Select(x => x.Nodes))
             {
-                this.issuesChecked.SetItemChecked(i, this.selectAllCheckBox.Checked);
+                foreach (var node in nodes.OfType<TreeNode>())
+                {
+                    node.Checked = senderTyped.Checked;
+                    if (node.Checked)
+                    {
+                        checkedItems.Add(node.Text);
+                    }
+                    else
+                    {
+                        checkedItems.Remove(node.Text);
+                    }
+                }
             }
         }
 
@@ -135,26 +219,29 @@ namespace Saritasa.Prettify.UI
             return string.Empty;
         }
 
-        private async void runButton_Click(object sender, EventArgs e)
+        private async void RunButton_Click(object sender, EventArgs e)
         {
             this.runButton.Enabled = false;
             var workspace = MSBuildWorkspace.Create();
             var solution = await workspace.OpenSolutionAsync(this.solutionFile);
-            var rules = this.issuesChecked.CheckedItems.OfType<string>()
+            var rules = this.checkedItems
                 .Select(x => RetrieveId(x))
                 .ToList();
+
+            var filesToBeFixed = new HashSet<string>();
+            var diagnosticsToBeFixes = new HashSet<string>();
 
             foreach (var solutionProject in solution.Projects)
             {
                 var diagnostics = await ProjectHelper.GetProjectAnalyzerDiagnosticsAsync(analyzers, solutionProject, true);
-                var projectAnalyzers = diagnostics.Where(x => !rules.Any() || rules.Contains(x.Id))
+                var projectAnalyzers = diagnostics.Where(x => !rules.Any() || rules.Contains(x.Descriptor.Id))
                     .ToList();
 
-                outputTextBox.AppendText($"<======= Project: {solutionProject.Name} =======>");
+                outputTextBox.AppendText($"<======= Project: {solutionProject.Name} =======>\r\n");
 
-                if (!diagnostics.Any())
+                if (!projectAnalyzers.Any())
                 {
-                    outputTextBox.AppendText($@"Can't find any diagnostic issues for {string.Join(",", this.issuesChecked.CheckedItems.OfType<string>())}");
+                    outputTextBox.AppendText($"Can't find any diagnostic issues for {string.Join(",", rules)}\r\n");
                 }
                 else
                 {
@@ -166,6 +253,9 @@ namespace Saritasa.Prettify.UI
                             GetFormattedFileName(projectAnalyzer.Location.GetLineSpan().Path),
                             projectAnalyzer.Location.GetLineSpan().StartLinePosition.Line,
                             projectAnalyzer.Location.GetLineSpan().StartLinePosition.Character) + "\r\n");
+
+                        filesToBeFixed.Add(projectAnalyzer.Location.GetLineSpan().Path);
+                        diagnosticsToBeFixes.Add(projectAnalyzer.Id);
                     }
 
                     if (this.fixIssues.Checked)
@@ -194,7 +284,7 @@ namespace Saritasa.Prettify.UI
 
                             if (equivalenceGroups.Count() > 1)
                             {
-                                this.outputTextBox.AppendText("[Warning] Allowed only one equivalence group for fix");
+                                this.outputTextBox.AppendText("[Warning] Allowed only one equivalence group for fix\r\n");
                                 continue;
                             }
 
@@ -202,22 +292,24 @@ namespace Saritasa.Prettify.UI
 
                             if (operations.Length == 0)
                             {
-                                this.outputTextBox.AppendText("[Information] No changes was found for this fixer");
+                                this.outputTextBox.AppendText("[Information] No changes was found for this fixer\r\n");
                                 continue;
                             }
 
                             operations[0].Apply(workspace, default(CancellationToken));
 
-                            this.outputTextBox.AppendText($"[Information] Fixer with DiagnosticId {keyValuePair.Key} was applied");
+                            this.outputTextBox.AppendText($"[Information] Fixer with DiagnosticId {keyValuePair.Key} was applied\r\n");
                         }
                     }
                 }
             }
 
+            this.outputTextBox.AppendText($"Done, found {diagnosticsToBeFixes.Count} issues in {filesToBeFixed.Count} files.\r\n");
+
             this.runButton.Enabled = true;
         }
 
-        private void clearOutputButton_Click(object sender, EventArgs e)
+        private void ClearOutputButton_Click(object sender, EventArgs e)
         {
             this.outputTextBox.Clear();
         }
@@ -225,9 +317,8 @@ namespace Saritasa.Prettify.UI
         private static string GetFormattedFileName(string input)
             => !string.IsNullOrWhiteSpace(input) ? "..\\" + Path.GetFileName(input) : string.Empty;
 
-        private void issuesChecked_SelectedIndexChanged(object sender, EventArgs e)
+        private void IssuesChecked_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.viewDescriptionButton.Enabled = true;
             this.openHelpUrlButton.Enabled = true;
             var selectedIndex = (sender as CheckedListBox).SelectedIndex;
             if (selectedIndex != default(int))
@@ -239,7 +330,7 @@ namespace Saritasa.Prettify.UI
             }
         }
 
-        private void viewDescriptionButton_Click(object sender, EventArgs e)
+        private void ViewDescriptionButton_Click(object sender, EventArgs e)
         {
             var diagnostic = analyzers.SelectMany(x => x.SupportedDiagnostics)
                     .FirstOrDefault(x => x.Id == selectedDiagnosticId);
@@ -250,11 +341,29 @@ namespace Saritasa.Prettify.UI
                 MessageBoxIcon.Information);
         }
 
-        private void openHelpUrlButton_Click(object sender, EventArgs e)
+        private void OpenHelpUrlButton_Click(object sender, EventArgs e)
         {
             var diagnostic = analyzers.SelectMany(x => x.SupportedDiagnostics)
                     .FirstOrDefault(x => x.Id == selectedDiagnosticId);
             Process.Start(diagnostic.HelpLinkUri);
+        }
+
+        private void IssuesTreeView_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Checked)
+            {
+                checkedItems.Add(e.Node.Text);
+            }
+            else
+            {
+                checkedItems.Remove(e.Node.Text);
+            }
+        }
+
+        private void IssuesTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            this.openHelpUrlButton.Enabled = true;
+            selectedDiagnosticId = RetrieveId(e.Node.Text);
         }
     }
 }
