@@ -1,6 +1,0 @@
-[11:27:21 FTL] 
-System.ArgumentException: Please specify folder in application settings with key StyleCopAssemblyFolder
-Имя параметра: folderValue
-   в Saritasa.Prettify.ConsoleApp.AssembliesHelper.GetFolderPath()
-   в Saritasa.Prettify.ConsoleApp.AssembliesHelper.GetAnalyzersAssembly()
-   в Saritasa.Prettify.ConsoleApp.Program.Main(String[] args)

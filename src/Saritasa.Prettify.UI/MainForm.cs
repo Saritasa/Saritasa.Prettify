@@ -71,7 +71,7 @@ namespace Saritasa.Prettify.UI
                             assembly = asm;
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         // TODO: logging
                     }
@@ -200,7 +200,7 @@ namespace Saritasa.Prettify.UI
 
                             var operations = await fix.GetOperationsAsync();
 
-                            if(operations.Length == 0)
+                            if (operations.Length == 0)
                             {
                                 this.outputTextBox.AppendText("[Information] No changes was found for this fixer");
                                 continue;
@@ -230,7 +230,7 @@ namespace Saritasa.Prettify.UI
             this.viewDescriptionButton.Enabled = true;
             this.openHelpUrlButton.Enabled = true;
             var selectedIndex = (sender as CheckedListBox).SelectedIndex;
-            if(selectedIndex != default(int))
+            if (selectedIndex != default(int))
             {
                 var checkBox = sender as CheckedListBox;
                 var selectedValue = checkBox.Items[selectedIndex];
@@ -244,9 +244,9 @@ namespace Saritasa.Prettify.UI
             var diagnostic = analyzers.SelectMany(x => x.SupportedDiagnostics)
                     .FirstOrDefault(x => x.Id == selectedDiagnosticId);
 
-            MessageBox.Show(diagnostic.Id + ": " + diagnostic.Description.ToString() + Environment.NewLine + diagnostic.HelpLinkUri, 
-                diagnostic.Title.ToString(), 
-                MessageBoxButtons.OK, 
+            MessageBox.Show(diagnostic.Id + ": " + diagnostic.Description.ToString() + Environment.NewLine + diagnostic.HelpLinkUri,
+                diagnostic.Title.ToString(),
+                MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
 

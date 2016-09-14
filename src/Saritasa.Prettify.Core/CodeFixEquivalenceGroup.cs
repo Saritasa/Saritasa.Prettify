@@ -141,7 +141,7 @@ namespace Saritasa.Prettify.Core
             var context = new FixAllContext(document, this.CodeFixProvider, FixAllScope.Solution, this.CodeFixEquivalenceKey, diagnosticIds, diagnosticsProvider, cancellationToken);
 
             CodeAction action = await this.FixAllProvider.GetFixAsync(context).ConfigureAwait(false);
-            if(action == null)
+            if (action == null)
             {
                 return Enumerable.Empty<CodeActionOperation>()
                     .ToImmutableArray();

@@ -22,33 +22,33 @@ function Merge {
     Write-Host "Current directory: $directory" -ForegroundColor "Green"
     Write-Host "ILMerge.exe location : $ilMergeFile" -ForegroundColor "Green"
 
-    #validation block
+    # validation block
 
-    if($pathToExe -eq "")
+    if ($pathToExe -eq "")
     {
         throw "Please specify path to exe which will merged with dll's, -pathToExe"
     }
 
     $pathToExe = $directory + $pathToExe
 
-    if(![System.IO.File]::Exists($pathToExe))
+    if (![System.IO.File]::Exists($pathToExe))
     {
         throw "merging .exe file not exists, searching in $pathToExe"
     }
 
-    if($dllsToMergeDirectory -eq "")
+    if ($dllsToMergeDirectory -eq "")
     {
         throw "Plase specify full directory for dlls"
     }
 
     $dllsToMergeDirectory = $directory + $dllsToMergeDirectory
 
-    if(![System.IO.Directory]::Exists($dllsToMergeDirectory))
+    if (![System.IO.Directory]::Exists($dllsToMergeDirectory))
     {
         throw "Directory not exists, -dllToMergeDirectory, searching in $dllsToMergeDirectory"
     }
 
-    if([System.IO.File]::Exists($ilMergeFile) -eq $false)
+    if ([System.IO.File]::Exists($ilMergeFile) -eq $false)
     {
         throw "IlMerge file not found, searched at " + $ilMergeFile
     }
@@ -110,7 +110,7 @@ Task IlMerge -Description "Merging .exe with dlls in created Temp directory" `
 Task RemoveMergeDirectory -Description "Removing temp directory" `
 {
     $tempPath = Join-Path $PSScriptRoot "Temp"
-    if([System.IO.Directory]::Exists($tempPath))
+    if ([System.IO.Directory]::Exists($tempPath))
     {
         $directoryDeleted = $false
         $retryCount = 0
@@ -140,9 +140,3 @@ Task RemoveMergeDirectory -Description "Removing temp directory" `
         Write-Host "Temp directory is not exists, done." -ForegroundColor Green
     }
 }
-
-
-
-
-
-

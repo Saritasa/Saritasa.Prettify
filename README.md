@@ -14,6 +14,11 @@ Note
 1. Do not delete folder "SCAnalyzersLibraries".
 1. Do not update any packages because we use old Roslyn libraries for compatibility with StyleCop Analyzers.
 
+Install
+-------
+
+- https://s3-us-west-2.amazonaws.com/saritasa-code-prettify/release/publish.htm
+
 Todo
 ----
 

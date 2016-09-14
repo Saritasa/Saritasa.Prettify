@@ -15,7 +15,6 @@ namespace Saritasa.Prettify.Core
         public const string StyleCopCodeFixesDllNameKey = "StyleCopCodeFixesDllName";
         public const string StyleCopAnalyzersDllNameKey = "StyleCopAnalyzersDllName";
 
-
         public static string GetFolderPath()
         {
             var folderValue = ConfigurationManager.AppSettings[StyleCopAssemblyFolderKey];

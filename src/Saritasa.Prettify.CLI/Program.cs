@@ -78,7 +78,6 @@ namespace Saritasa.Prettify.ConsoleApp
                         break;
                     }
 
-
                     if (options.Mode == Args.RunningMode.Fix)
                     {
                         var diagnistics = DiagnosticHelper.GetAnalyzerDiagnosticsAsync(solution, analyzers, true).Result;
@@ -118,8 +117,6 @@ namespace Saritasa.Prettify.ConsoleApp
                         }
                     }
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -167,8 +164,9 @@ namespace Saritasa.Prettify.ConsoleApp
         public const string Stats = "--stats";
         public const string Fix = "--fix";
         public const string SolutionFileExtension = ".sln";
-        public Regex rules = new Regex("^--((?i)rules=)(?<rules>[A-z0-9,_]+)", RegexOptions.Compiled | RegexOptions.Singleline);
-        public Regex version = new Regex("^((?i)-v|--version)$", RegexOptions.Compiled | RegexOptions.Singleline);
+
+        private Regex rules = new Regex("^--((?i)rules=)(?<rules>[A-z0-9,_]+)", RegexOptions.Compiled | RegexOptions.Singleline);
+        private Regex version = new Regex("^((?i)-v|--version)$", RegexOptions.Compiled | RegexOptions.Singleline);
 
         public Args(string[] args)
         {
@@ -178,7 +176,7 @@ namespace Saritasa.Prettify.ConsoleApp
             }
 
             Enumerable.Range(0, args.Length)
-                .Aggregate(0, (i, seed) =>
+                .Aggregate(0, (Func<int, int, int>)((i, seed) =>
                 {
                     if (Regex.IsMatch(args[i], $"(?i){Stats}"))
                     {
@@ -192,21 +190,20 @@ namespace Saritasa.Prettify.ConsoleApp
                     {
                         ShowVersion = true;
                     }
-                    if (rules.IsMatch(args[i]))
+                    if (this.rules.IsMatch(args[i]))
                     {
-                        rules.Matches(args[i])
-                            .OfType<Match>()
-                            .Aggregate(0, (seed1, match) =>
+                        Enumerable.OfType<Match>(this.rules.Matches((string)args[(int)i]))
+                            .Aggregate(0, (Func<int, Match, int>)((seed1, match) =>
                             {
                                 if (match.Groups["rules"].Success)
                                 {
                                     var splittedRules = match.Groups["rules"].Value.Split(new[] { ',' },
                                         StringSplitOptions.RemoveEmptyEntries);
-                                    Rules = splittedRules;
+                                    this.Rules = splittedRules;
                                 }
 
                                 return ++seed1;
-                            });
+                            }));
                     }
                     if (i == 0)
                     {
@@ -223,7 +220,7 @@ namespace Saritasa.Prettify.ConsoleApp
                     }
 
                     return ++i;
-                });
+                }));
         }
 
         public enum RunningMode
