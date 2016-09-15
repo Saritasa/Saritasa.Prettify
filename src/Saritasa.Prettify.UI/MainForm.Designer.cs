@@ -33,12 +33,12 @@
             this.selectSolutionButton = new System.Windows.Forms.Button();
             this.selectedSolutionTextBox = new System.Windows.Forms.TextBox();
             this.OptionsGroupBox = new System.Windows.Forms.GroupBox();
+            this.analyzeButton = new System.Windows.Forms.Button();
             this.issuesTreeView = new System.Windows.Forms.TreeView();
             this.autoCompleteTextBox = new System.Windows.Forms.TextBox();
             this.openHelpUrlButton = new System.Windows.Forms.Button();
-            this.runButton = new System.Windows.Forms.Button();
+            this.fixButton = new System.Windows.Forms.Button();
             this.selectAllCheckBox = new System.Windows.Forms.CheckBox();
-            this.fixIssues = new System.Windows.Forms.CheckBox();
             this.outputGroupBox = new System.Windows.Forms.GroupBox();
             this.clearOutputButton = new System.Windows.Forms.Button();
             this.outputTextBox = new System.Windows.Forms.TextBox();
@@ -82,18 +82,29 @@
             this.OptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.OptionsGroupBox.Controls.Add(this.analyzeButton);
             this.OptionsGroupBox.Controls.Add(this.issuesTreeView);
             this.OptionsGroupBox.Controls.Add(this.autoCompleteTextBox);
             this.OptionsGroupBox.Controls.Add(this.openHelpUrlButton);
-            this.OptionsGroupBox.Controls.Add(this.runButton);
+            this.OptionsGroupBox.Controls.Add(this.fixButton);
             this.OptionsGroupBox.Controls.Add(this.selectAllCheckBox);
-            this.OptionsGroupBox.Controls.Add(this.fixIssues);
             this.OptionsGroupBox.Location = new System.Drawing.Point(13, 78);
             this.OptionsGroupBox.Name = "OptionsGroupBox";
             this.OptionsGroupBox.Size = new System.Drawing.Size(548, 313);
             this.OptionsGroupBox.TabIndex = 2;
             this.OptionsGroupBox.TabStop = false;
             this.OptionsGroupBox.Text = "Options";
+            // 
+            // analyzeButton
+            // 
+            this.analyzeButton.Enabled = false;
+            this.analyzeButton.Location = new System.Drawing.Point(372, 255);
+            this.analyzeButton.Name = "analyzeButton";
+            this.analyzeButton.Size = new System.Drawing.Size(75, 30);
+            this.analyzeButton.TabIndex = 8;
+            this.analyzeButton.Text = "Analyze!";
+            this.analyzeButton.UseVisualStyleBackColor = true;
+            this.analyzeButton.Click += new System.EventHandler(this.AnalyzeButton_Click);
             // 
             // issuesTreeView
             // 
@@ -125,18 +136,18 @@
             this.openHelpUrlButton.UseVisualStyleBackColor = true;
             this.openHelpUrlButton.Click += new System.EventHandler(this.OpenHelpUrlButton_Click);
             // 
-            // runButton
+            // fixButton
             // 
-            this.runButton.AccessibleDescription = "";
-            this.runButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.runButton.Enabled = false;
-            this.runButton.Location = new System.Drawing.Point(453, 255);
-            this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(75, 30);
-            this.runButton.TabIndex = 3;
-            this.runButton.Text = "Run!";
-            this.runButton.UseVisualStyleBackColor = true;
-            this.runButton.Click += new System.EventHandler(this.RunButton_Click);
+            this.fixButton.AccessibleDescription = "";
+            this.fixButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.fixButton.Enabled = false;
+            this.fixButton.Location = new System.Drawing.Point(453, 255);
+            this.fixButton.Name = "fixButton";
+            this.fixButton.Size = new System.Drawing.Size(75, 30);
+            this.fixButton.TabIndex = 3;
+            this.fixButton.Text = "Fix!";
+            this.fixButton.UseVisualStyleBackColor = true;
+            this.fixButton.Click += new System.EventHandler(this.RunButton_Click);
             // 
             // selectAllCheckBox
             // 
@@ -144,26 +155,13 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.selectAllCheckBox.AutoSize = true;
-            this.selectAllCheckBox.Location = new System.Drawing.Point(108, 19);
+            this.selectAllCheckBox.Location = new System.Drawing.Point(453, 20);
             this.selectAllCheckBox.Name = "selectAllCheckBox";
             this.selectAllCheckBox.Size = new System.Drawing.Size(75, 17);
             this.selectAllCheckBox.TabIndex = 2;
             this.selectAllCheckBox.Text = "Select all?";
             this.selectAllCheckBox.UseVisualStyleBackColor = true;
             this.selectAllCheckBox.CheckedChanged += new System.EventHandler(this.SelectAllCheckBox_CheckedChanged);
-            // 
-            // fixIssues
-            // 
-            this.fixIssues.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.fixIssues.AutoSize = true;
-            this.fixIssues.Location = new System.Drawing.Point(20, 19);
-            this.fixIssues.Name = "fixIssues";
-            this.fixIssues.Size = new System.Drawing.Size(78, 17);
-            this.fixIssues.TabIndex = 0;
-            this.fixIssues.Text = "Fix Issues?";
-            this.fixIssues.UseVisualStyleBackColor = true;
             // 
             // outputGroupBox
             // 
@@ -253,17 +251,17 @@
         private System.Windows.Forms.Button selectSolutionButton;
         private System.Windows.Forms.TextBox selectedSolutionTextBox;
         private System.Windows.Forms.GroupBox OptionsGroupBox;
-        private System.Windows.Forms.CheckBox fixIssues;
         private System.Windows.Forms.GroupBox outputGroupBox;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel currentStatusLabel;
         private System.Windows.Forms.CheckBox selectAllCheckBox;
-        private System.Windows.Forms.Button runButton;
+        private System.Windows.Forms.Button fixButton;
         private System.Windows.Forms.TextBox outputTextBox;
         private System.Windows.Forms.Button clearOutputButton;
         private System.Windows.Forms.Button openHelpUrlButton;
         private System.Windows.Forms.TextBox autoCompleteTextBox;
         private System.Windows.Forms.TreeView issuesTreeView;
+        private System.Windows.Forms.Button analyzeButton;
     }
 }
 

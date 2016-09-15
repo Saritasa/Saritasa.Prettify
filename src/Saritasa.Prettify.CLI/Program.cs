@@ -176,7 +176,7 @@ namespace Saritasa.Prettify.ConsoleApp
             }
 
             Enumerable.Range(0, args.Length)
-                .Aggregate(0, (Func<int, int, int>)((i, seed) =>
+                .Aggregate(0, (i, seed) =>
                 {
                     if (Regex.IsMatch(args[i], $"(?i){Stats}"))
                     {
@@ -193,7 +193,7 @@ namespace Saritasa.Prettify.ConsoleApp
                     if (this.rules.IsMatch(args[i]))
                     {
                         Enumerable.OfType<Match>(this.rules.Matches((string)args[(int)i]))
-                            .Aggregate(0, (Func<int, Match, int>)((seed1, match) =>
+                            .Aggregate(0, (seed1, match) =>
                             {
                                 if (match.Groups["rules"].Success)
                                 {
@@ -203,7 +203,7 @@ namespace Saritasa.Prettify.ConsoleApp
                                 }
 
                                 return ++seed1;
-                            }));
+                            });
                     }
                     if (i == 0)
                     {
@@ -220,7 +220,7 @@ namespace Saritasa.Prettify.ConsoleApp
                     }
 
                     return ++i;
-                }));
+                });
         }
 
         public enum RunningMode

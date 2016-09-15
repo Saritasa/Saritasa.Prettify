@@ -23,17 +23,17 @@ namespace Saritasa.Prettify.UI
 {
     public partial class MainForm : Form
     {
+        private const int TVIF_STATE = 0x8;
+        private const int TVIS_STATEIMAGEMASK = 0xF000;
+        private const int TV_FIRST = 0x1100;
+        private const int TVM_SETITEM = TV_FIRST + 63;
+
         private string solutionFile;
         private Assembly styleCopAnalyzerAssembly;
         private Assembly styleCopFixersAssembly;
         private string selectedDiagnosticId = string.Empty;
         private ImmutableArray<DiagnosticAnalyzer> analyzers;
         private HashSet<string> checkedItems = new HashSet<string>();
-
-        private const int TVIF_STATE = 0x8;
-        private const int TVIS_STATEIMAGEMASK = 0xF000;
-        private const int TV_FIRST = 0x1100;
-        private const int TVM_SETITEM = TV_FIRST + 63;
 
 #pragma warning disable SA1307
         [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Auto)]
@@ -53,16 +53,18 @@ namespace Saritasa.Prettify.UI
         }
 #pragma warning restore SA1307
 
+#pragma warning disable SA1313
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam,
                                                  ref TVITEM lParam);
+#pragma warning restore SA1313
 
         /// <summary>
         /// Hides the checkbox for the specified node on a TreeView control.
         /// </summary>
         private void HideCheckBox(TreeView tvw, TreeNode node)
         {
-            var tvi = new TVITEM();
+            var tvi = default(TVITEM);
             tvi.hItem = node.Handle;
             tvi.mask = TVIF_STATE;
             tvi.stateMask = TVIS_STATEIMAGEMASK;
@@ -84,6 +86,7 @@ namespace Saritasa.Prettify.UI
             this.autoCompleteTextBox.AutoCompleteCustomSource = autoCompleteSource;
             this.autoCompleteTextBox.TextChanged += AutoCompleteTextBox_TextChanged;
             this.Text += $" {ApplicationVersionUtility.GetVersion()}";
+            this.DoubleBuffered = true;
         }
 
         private void AutoCompleteTextBox_TextChanged(object sender, EventArgs e)
@@ -92,7 +95,6 @@ namespace Saritasa.Prettify.UI
             SeedCheckList(this.autoCompleteTextBox.Text);
 
             this.selectAllCheckBox.Checked = false;
-            this.fixIssues.Checked = false;
         }
 
         private Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
@@ -136,7 +138,8 @@ namespace Saritasa.Prettify.UI
                 {
                     this.selectedSolutionTextBox.Text = solutionFile;
                     this.currentStatusLabel.Text = $"Selected solution file {this.openSolutionDialog.SafeFileName}";
-                    this.runButton.Enabled = true;
+                    this.fixButton.Enabled = true;
+                    this.analyzeButton.Enabled = true;
                 }
             }
         }
@@ -165,11 +168,19 @@ namespace Saritasa.Prettify.UI
                         this.issuesTreeView.Nodes.Add(node);
                     }
 
-                    node.Nodes.Add(new TreeNode
+                    var nodeFont = new Font(Font, FontStyle.Bold);
+                    var childNode = new TreeNode
                     {
                         Text = text,
                         Checked = checkedItems.Contains(text)
-                    });
+                    };
+
+                    if (RulesUtility.GetImportantRules().Contains(RetrieveId(childNode.Text)))
+                    {
+                        childNode.NodeFont = nodeFont;
+                    }
+
+                    node.Nodes.Add(childNode);
                 }
             }
 
@@ -219,9 +230,8 @@ namespace Saritasa.Prettify.UI
             return string.Empty;
         }
 
-        private async void RunButton_Click(object sender, EventArgs e)
+        private async Task Run(bool fixIssues = false)
         {
-            this.runButton.Enabled = false;
             var workspace = MSBuildWorkspace.Create();
             var solution = await workspace.OpenSolutionAsync(this.solutionFile);
             var rules = this.checkedItems
@@ -258,7 +268,7 @@ namespace Saritasa.Prettify.UI
                         diagnosticsToBeFixes.Add(projectAnalyzer.Id);
                     }
 
-                    if (this.fixIssues.Checked)
+                    if (fixIssues)
                     {
                         var codeFixes =
                         CodeFixProviderHelper.GetFixProviders(new[] { styleCopAnalyzerAssembly, styleCopFixersAssembly })
@@ -305,8 +315,17 @@ namespace Saritasa.Prettify.UI
             }
 
             this.outputTextBox.AppendText($"Done, found {diagnosticsToBeFixes.Count} issues in {filesToBeFixed.Count} files.\r\n");
+        }
 
-            this.runButton.Enabled = true;
+        private async void RunButton_Click(object sender, EventArgs e)
+        {
+            this.fixButton.Enabled = false;
+            this.analyzeButton.Enabled = false;
+
+            await Run(true);
+
+            this.analyzeButton.Enabled = true;
+            this.fixButton.Enabled = true;
         }
 
         private void ClearOutputButton_Click(object sender, EventArgs e)
@@ -362,8 +381,26 @@ namespace Saritasa.Prettify.UI
 
         private void IssuesTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            var id = RetrieveId(e.Node.Text);
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                this.openHelpUrlButton.Enabled = false;
+                return;
+            }
+
+            selectedDiagnosticId = id;
             this.openHelpUrlButton.Enabled = true;
-            selectedDiagnosticId = RetrieveId(e.Node.Text);
+        }
+
+        private async void AnalyzeButton_Click(object sender, EventArgs e)
+        {
+            this.fixButton.Enabled = false;
+            this.analyzeButton.Enabled = false;
+
+            await Run();
+
+            this.analyzeButton.Enabled = true;
+            this.fixButton.Enabled = true;
         }
     }
 }
