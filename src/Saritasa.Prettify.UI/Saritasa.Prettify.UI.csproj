@@ -212,7 +212,9 @@
   </Target>
   -->
   <ItemGroup>
-    <Content Include="fix.ico" />
+    <Content Include="fix.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="publish.htm.template" />
     <Content Include="SCAnalyzersLibraries\Newtonsoft.Json.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
