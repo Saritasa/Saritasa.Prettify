@@ -1,4 +1,4 @@
-﻿// Copyright (c) Saritasa, LLC
+﻿
 
 namespace Saritasa.Prettify.Core
 {
@@ -7,7 +7,6 @@ namespace Saritasa.Prettify.Core
     using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
-    using Core;
     using Microsoft.CodeAnalysis.CodeFixes;
 
     /// <summary>

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Deployment.Application;
-using System.Linq;
+﻿using System.Deployment.Application;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Saritasa.Prettify.UI.Utilities
 {

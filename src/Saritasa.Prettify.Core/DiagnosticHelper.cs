@@ -1,4 +1,4 @@
-﻿// Copyright (c) Saritasa, LLC
+﻿
 
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -10,7 +10,6 @@ namespace Saritasa.Prettify.Core
     using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
     using System.Threading.Tasks;
     using Microsoft.CodeAnalysis.Diagnostics;
 
