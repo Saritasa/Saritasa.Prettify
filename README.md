@@ -13,3 +13,9 @@ Todo
 ----
 
 1. Need to remove redunant libraries for Microsoft Analyzers.
+
+Installation 
+----
+
+1. Install latest version from this [url](https://s3-us-west-2.amazonaws.com/saritasa-code-prettify/release/publish.htm).
+2. Run.
