@@ -44,7 +44,7 @@ namespace Saritasa.Prettify.Core
         public static async Task<ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>>> GetAnalyzerDiagnosticsAsync(Solution solution,
             ImmutableArray<DiagnosticAnalyzer> analyzers, bool force, CancellationToken cancellationToken = default(CancellationToken))
         {
-            List<KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>> projectDiagnosticTasks = new List<KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>>();
+            var projectDiagnosticTasks = new List<KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>>();
 
             // Make sure we analyze the projects in parallel
             foreach (var project in solution.Projects)
@@ -54,10 +54,10 @@ namespace Saritasa.Prettify.Core
                     continue;
                 }
 
-                projectDiagnosticTasks.Add(new KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>(project.Id, ProjectHelper.GetProjectAnalyzerDiagnosticsAsync(analyzers, project, force)));
+                 projectDiagnosticTasks.Add(new KeyValuePair<ProjectId, Task<ImmutableArray<Diagnostic>>>(project.Id, ProjectHelper.GetProjectAnalyzerDiagnosticsAsync(analyzers, project, force)));
             }
 
-            ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>>.Builder projectDiagnosticBuilder = ImmutableDictionary.CreateBuilder<ProjectId, ImmutableArray<Diagnostic>>();
+            var projectDiagnosticBuilder = ImmutableDictionary.CreateBuilder<ProjectId, ImmutableArray<Diagnostic>>();
             foreach (var task in projectDiagnosticTasks)
             {
                 projectDiagnosticBuilder.Add(task.Key, await task.Value.ConfigureAwait(false));

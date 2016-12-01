@@ -186,16 +186,16 @@ namespace Saritasa.Prettify.ConsoleApp
                     {
                         ShowVersion = true;
                     }
-                    if (this.rules.IsMatch(args[i]))
+                    if (rules.IsMatch(args[i]))
                     {
-                        Enumerable.OfType<Match>(this.rules.Matches((string)args[(int)i]))
+                        Enumerable.OfType<Match>(rules.Matches((string)args[(int)i]))
                             .Aggregate(0, (seed1, match) =>
                             {
                                 if (match.Groups["rules"].Success)
                                 {
                                     var splittedRules = match.Groups["rules"].Value.Split(new[] { ',' },
                                         StringSplitOptions.RemoveEmptyEntries);
-                                    this.Rules = splittedRules;
+                                    Rules = splittedRules;
                                 }
 
                                 return ++seed1;

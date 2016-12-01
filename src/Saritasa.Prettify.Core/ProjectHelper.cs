@@ -37,8 +37,8 @@ namespace Saritasa.Prettify.Core
             var modifiedCompilationOptions = project.CompilationOptions.WithSpecificDiagnosticOptions(modifiedSpecificDiagnosticOptions);
             var processedProject = project.WithCompilationOptions(modifiedCompilationOptions);
 
-            Compilation compilation = await processedProject.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            CompilationWithAnalyzers compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, new CompilationWithAnalyzersOptions(new AnalyzerOptions(ImmutableArray.Create<AdditionalText>()), null, true, false));
+            var compilation = await processedProject.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            var compilationWithAnalyzers = compilation.WithAnalyzers(analyzers, new CompilationWithAnalyzersOptions(new AnalyzerOptions(ImmutableArray.Create<AdditionalText>()), null, true, false));
 
             var diagnostics = await GetAllDiagnosticsAsync(compilation, compilationWithAnalyzers, analyzers, project.Documents, true, cancellationToken).ConfigureAwait(false);
             return diagnostics;
@@ -46,7 +46,8 @@ namespace Saritasa.Prettify.Core
 
         private static async Task<ImmutableArray<Diagnostic>> GetAllDiagnosticsAsync(Compilation compilation, CompilationWithAnalyzers compilationWithAnalyzers, ImmutableArray<DiagnosticAnalyzer> analyzers, IEnumerable<Document> documents, bool includeCompilerDiagnostics, CancellationToken cancellationToken)
         {
-            return await compilationWithAnalyzers.GetAllDiagnosticsAsync().ConfigureAwait(false);
+            // TODO: Remove unused arguments.
+            return await compilationWithAnalyzers.GetAllDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

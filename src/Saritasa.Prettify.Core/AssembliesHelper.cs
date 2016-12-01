@@ -2,6 +2,8 @@
 using System.Configuration;
 using System.IO;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Saritasa.Prettify.Core
 {
@@ -26,6 +28,12 @@ namespace Saritasa.Prettify.Core
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderValue);
         }
 
+        /// <summary>
+        /// Loading assembly which contains <see cref="CodeFixProvider"/>.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
         public static Assembly GetCodeFixAssembly()
         {
             var folder = GetFolderPath();
@@ -45,6 +53,12 @@ namespace Saritasa.Prettify.Core
             return Assembly.LoadFile(pathToAssembly);
         }
 
+        /// <summary>
+        /// Loading assembly which contains <see cref="DiagnosticAnalyzer"/>.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FileNotFoundException"></exception>
         public static Assembly GetAnalyzersAssembly()
         {
             var folder = GetFolderPath();

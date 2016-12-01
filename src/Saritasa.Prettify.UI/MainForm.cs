@@ -40,6 +40,7 @@ namespace Saritasa.Prettify.UI
             public IntPtr hItem;
             public int state;
             public int stateMask;
+            // ReSharper disable MemberCanBePrivate.Local
             [MarshalAs(UnmanagedType.LPTStr)]
             public string lpszText;
             public int cchTextMax;
@@ -47,6 +48,7 @@ namespace Saritasa.Prettify.UI
             public int iSelectedImage;
             public int cChildren;
             public IntPtr lParam;
+            // ReSharper restore MemberCanBePrivate.Local
         }
 #pragma warning restore SA1307
 
@@ -79,19 +81,19 @@ namespace Saritasa.Prettify.UI
             var autoCompleteSource = new AutoCompleteStringCollection();
             autoCompleteSource.AddRange(analyzers.SelectMany(x => x.SupportedDiagnostics).Select(x => $"{x.Id}: {x.Title}")
                 .ToArray());
-            this.autoCompleteTextBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
-            this.autoCompleteTextBox.AutoCompleteCustomSource = autoCompleteSource;
-            this.autoCompleteTextBox.TextChanged += AutoCompleteTextBox_TextChanged;
-            this.Text += $" {ApplicationVersionUtility.GetVersion()}";
-            this.DoubleBuffered = true;
+            autoCompleteTextBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            autoCompleteTextBox.AutoCompleteCustomSource = autoCompleteSource;
+            autoCompleteTextBox.TextChanged += AutoCompleteTextBox_TextChanged;
+            Text += $" {ApplicationVersionUtility.GetVersion()}";
+            DoubleBuffered = true;
         }
 
         private void AutoCompleteTextBox_TextChanged(object sender, EventArgs e)
         {
-            this.issuesTreeView.Nodes.Clear();
-            SeedCheckList(this.autoCompleteTextBox.Text);
+            issuesTreeView.Nodes.Clear();
+            SeedCheckList(autoCompleteTextBox.Text);
 
-            this.selectAllCheckBox.Checked = false;
+            selectAllCheckBox.Checked = false;
         }
 
         private Assembly CurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
@@ -122,21 +124,21 @@ namespace Saritasa.Prettify.UI
 
         private void SelectSolutionButton_Click(object sender, EventArgs e)
         {
-            var dialog = this.openSolutionDialog.ShowDialog();
+            var dialog = openSolutionDialog.ShowDialog();
             if (dialog == DialogResult.OK)
             {
-                solutionFile = this.openSolutionDialog.FileName;
+                solutionFile = openSolutionDialog.FileName;
                 if (Path.GetExtension(solutionFile) != ".sln")
                 {
-                    MessageBox.Show(this.Owner, "Please choice solution file.", "File select error",
+                    MessageBox.Show(Owner, "Please choice solution file.", "File select error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
-                    this.selectedSolutionTextBox.Text = solutionFile;
-                    this.currentStatusLabel.Text = $"Selected solution file {this.openSolutionDialog.SafeFileName}";
-                    this.fixButton.Enabled = true;
-                    this.analyzeButton.Enabled = true;
+                    selectedSolutionTextBox.Text = solutionFile;
+                    currentStatusLabel.Text = $"Selected solution file {openSolutionDialog.SafeFileName}";
+                    fixButton.Enabled = true;
+                    analyzeButton.Enabled = true;
                 }
             }
         }
@@ -148,7 +150,7 @@ namespace Saritasa.Prettify.UI
             {
                 foreach (var diagnostic in analyzer.SupportedDiagnostics)
                 {
-                    var node = this.issuesTreeView.Nodes[diagnostic.Category];
+                    var node = issuesTreeView.Nodes[diagnostic.Category];
                     var text = $"{diagnostic.Id}: {diagnostic.Title}";
                     if (!string.IsNullOrWhiteSpace(filterText) && !text.Contains(filterText) && !checkedItems.Contains(text))
                     {
@@ -162,7 +164,7 @@ namespace Saritasa.Prettify.UI
                             Checked = false,
                             Name = diagnostic.Category
                         };
-                        this.issuesTreeView.Nodes.Add(node);
+                        issuesTreeView.Nodes.Add(node);
                     }
 
                     var nodeFont = new Font(Font, FontStyle.Bold);
@@ -181,23 +183,23 @@ namespace Saritasa.Prettify.UI
                 }
             }
 
-            if (this.issuesTreeView.Nodes.Count > 0)
+            if (issuesTreeView.Nodes.Count > 0)
             {
-                HideCheckBox(this.issuesTreeView, this.issuesTreeView.Nodes[0]);
+                HideCheckBox(issuesTreeView, issuesTreeView.Nodes[0]);
             }
 
-            foreach (var node in this.issuesTreeView.Nodes.OfType<TreeNode>())
+            foreach (var node in issuesTreeView.Nodes.OfType<TreeNode>())
             {
-                HideCheckBox(this.issuesTreeView, node);
+                HideCheckBox(issuesTreeView, node);
             }
 
-            this.issuesTreeView.Refresh();
+            issuesTreeView.Refresh();
         }
 
         private void SelectAllCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             var senderTyped = sender as CheckBox;
-            foreach (TreeNodeCollection nodes in issuesTreeView.Nodes.OfType<TreeNode>().Select(x => x.Nodes))
+            foreach (var nodes in issuesTreeView.Nodes.OfType<TreeNode>().Select(x => x.Nodes))
             {
                 foreach (var node in nodes.OfType<TreeNode>())
                 {
@@ -230,9 +232,9 @@ namespace Saritasa.Prettify.UI
         private async Task Run(bool fixIssues = false)
         {
             var workspace = MSBuildWorkspace.Create();
-            var solution = await workspace.OpenSolutionAsync(this.solutionFile);
-            var rules = this.checkedItems
-                .Select(x => RetrieveId(x))
+            var solution = await workspace.OpenSolutionAsync(solutionFile);
+            var rules = checkedItems
+                .Select(RetrieveId)
                 .ToList();
 
             var filesToBeFixed = new HashSet<string>();
@@ -254,7 +256,7 @@ namespace Saritasa.Prettify.UI
                 {
                     foreach (var projectAnalyzer in projectAnalyzers)
                     {
-                        this.outputTextBox.AppendText(string.Format("DiagnosticId {0} - {1} in file {2}({3},{4})",
+                        outputTextBox.AppendText(string.Format("DiagnosticId {0} - {1} in file {2}({3},{4})",
                             projectAnalyzer.Id,
                             projectAnalyzer.GetMessage(),
                             GetFormattedFileName(projectAnalyzer.Location.GetLineSpan().Path),
@@ -291,7 +293,7 @@ namespace Saritasa.Prettify.UI
 
                             if (equivalenceGroups.Count() > 1)
                             {
-                                this.outputTextBox.AppendText("[Warning] Allowed only one equivalence group for fix\r\n");
+                                outputTextBox.AppendText("[Warning] Allowed only one equivalence group for fix\r\n");
                                 continue;
                             }
 
@@ -299,35 +301,35 @@ namespace Saritasa.Prettify.UI
 
                             if (operations.Length == 0)
                             {
-                                this.outputTextBox.AppendText("[Information] No changes was found for this fixer\r\n");
+                                outputTextBox.AppendText("[Information] No changes was found for this fixer\r\n");
                                 continue;
                             }
 
                             operations[0].Apply(workspace, default(CancellationToken));
 
-                            this.outputTextBox.AppendText($"[Information] Fixer with DiagnosticId {keyValuePair.Key} was applied\r\n");
+                            outputTextBox.AppendText($"[Information] Fixer with DiagnosticId {keyValuePair.Key} was applied\r\n");
                         }
                     }
                 }
             }
 
-            this.outputTextBox.AppendText($"Done, found {diagnosticsToBeFixes.Count} issues in {filesToBeFixed.Count} files.\r\n");
+            outputTextBox.AppendText($"Done, found {diagnosticsToBeFixes.Count} issues in {filesToBeFixed.Count} files.\r\n");
         }
 
         private async void RunButton_Click(object sender, EventArgs e)
         {
-            this.fixButton.Enabled = false;
-            this.analyzeButton.Enabled = false;
+            fixButton.Enabled = false;
+            analyzeButton.Enabled = false;
 
             await Run(true);
 
-            this.analyzeButton.Enabled = true;
-            this.fixButton.Enabled = true;
+            analyzeButton.Enabled = true;
+            fixButton.Enabled = true;
         }
 
         private void ClearOutputButton_Click(object sender, EventArgs e)
         {
-            this.outputTextBox.Clear();
+            outputTextBox.Clear();
         }
 
         private static string GetFormattedFileName(string input)
@@ -335,7 +337,7 @@ namespace Saritasa.Prettify.UI
 
         private void IssuesChecked_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.openHelpUrlButton.Enabled = true;
+            openHelpUrlButton.Enabled = true;
             var selectedIndex = (sender as CheckedListBox).SelectedIndex;
             if (selectedIndex != default(int))
             {
@@ -381,23 +383,23 @@ namespace Saritasa.Prettify.UI
             var id = RetrieveId(e.Node.Text);
             if (string.IsNullOrWhiteSpace(id))
             {
-                this.openHelpUrlButton.Enabled = false;
+                openHelpUrlButton.Enabled = false;
                 return;
             }
 
             selectedDiagnosticId = id;
-            this.openHelpUrlButton.Enabled = true;
+            openHelpUrlButton.Enabled = true;
         }
 
         private async void AnalyzeButton_Click(object sender, EventArgs e)
         {
-            this.fixButton.Enabled = false;
-            this.analyzeButton.Enabled = false;
+            fixButton.Enabled = false;
+            analyzeButton.Enabled = false;
 
             await Run();
 
-            this.analyzeButton.Enabled = true;
-            this.fixButton.Enabled = true;
+            analyzeButton.Enabled = true;
+            fixButton.Enabled = true;
         }
     }
 }

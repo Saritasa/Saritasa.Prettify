@@ -25,13 +25,13 @@ namespace Saritasa.Prettify.Core
             ImmutableDictionary<ProjectId, ImmutableDictionary<string, ImmutableArray<Diagnostic>>> documentDiagnosticsToFix,
             ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> projectDiagnosticsToFix)
         {
-            this.CodeFixEquivalenceKey = equivalenceKey;
-            this.Solution = solution;
-            this.FixAllProvider = fixAllProvider;
-            this.CodeFixProvider = codeFixProvider;
-            this.DocumentDiagnosticsToFix = documentDiagnosticsToFix;
-            this.ProjectDiagnosticsToFix = projectDiagnosticsToFix;
-            this.NumberOfDiagnostics = documentDiagnosticsToFix.SelectMany(x => x.Value.Select(y => y.Value).SelectMany(y => y)).Count()
+            CodeFixEquivalenceKey = equivalenceKey;
+            Solution = solution;
+            FixAllProvider = fixAllProvider;
+            CodeFixProvider = codeFixProvider;
+            DocumentDiagnosticsToFix = documentDiagnosticsToFix;
+            ProjectDiagnosticsToFix = projectDiagnosticsToFix;
+            NumberOfDiagnostics = documentDiagnosticsToFix.SelectMany(x => x.Value.Select(y => y.Value).SelectMany(y => y)).Count()
                 + projectDiagnosticsToFix.SelectMany(x => x.Value).Count();
         }
 
@@ -58,9 +58,9 @@ namespace Saritasa.Prettify.Core
                 return ImmutableArray.Create<CodeFixEquivalenceGroup>();
             }
 
-            Dictionary<ProjectId, Dictionary<string, List<Diagnostic>>> relevantDocumentDiagnostics =
+            var relevantDocumentDiagnostics =
                 new Dictionary<ProjectId, Dictionary<string, List<Diagnostic>>>();
-            Dictionary<ProjectId, List<Diagnostic>> relevantProjectDiagnostics =
+            var relevantProjectDiagnostics =
                 new Dictionary<ProjectId, List<Diagnostic>>();
 
             foreach (var projectDiagnostics in allDiagnostics)
@@ -74,7 +74,7 @@ namespace Saritasa.Prettify.Core
 
                     if (diagnostic.Location.IsInSource)
                     {
-                        string sourcePath = diagnostic.Location.GetLineSpan().Path;
+                        var sourcePath = diagnostic.Location.GetLineSpan().Path;
 
                         Dictionary<string, List<Diagnostic>> projectDocumentDiagnostics;
                         if (!relevantDocumentDiagnostics.TryGetValue(projectDiagnostics.Key, out projectDocumentDiagnostics))
@@ -106,12 +106,12 @@ namespace Saritasa.Prettify.Core
                 }
             }
 
-            ImmutableDictionary<ProjectId, ImmutableDictionary<string, ImmutableArray<Diagnostic>>> documentDiagnosticsToFix =
+            var documentDiagnosticsToFix =
                 relevantDocumentDiagnostics.ToImmutableDictionary(i => i.Key, i => i.Value.ToImmutableDictionary(j => j.Key, j => j.Value.ToImmutableArray(), StringComparer.OrdinalIgnoreCase));
-            ImmutableDictionary<ProjectId, ImmutableArray<Diagnostic>> projectDiagnosticsToFix =
+            var projectDiagnosticsToFix =
                 relevantProjectDiagnostics.ToImmutableDictionary(i => i.Key, i => i.Value.ToImmutableArray());
 
-            HashSet<string> equivalenceKeys = new HashSet<string>();
+            var equivalenceKeys = new HashSet<string>();
             foreach (var diagnostic in relevantDocumentDiagnostics.Values.SelectMany(i => i.Values).SelectMany(i => i).Concat(relevantProjectDiagnostics.Values.SelectMany(i => i)))
             {
                 foreach (var codeAction in await GetFixesAsync(solution, codeFixProvider, diagnostic, cancellationToken).ConfigureAwait(false))
@@ -120,7 +120,7 @@ namespace Saritasa.Prettify.Core
                 }
             }
 
-            List<CodeFixEquivalenceGroup> groups = new List<CodeFixEquivalenceGroup>();
+            var groups = new List<CodeFixEquivalenceGroup>();
             foreach (var equivalenceKey in equivalenceKeys)
             {
                 groups.Add(new CodeFixEquivalenceGroup(equivalenceKey, solution, fixAllProvider, codeFixProvider, documentDiagnosticsToFix, projectDiagnosticsToFix));
@@ -131,15 +131,15 @@ namespace Saritasa.Prettify.Core
 
         public async Task<ImmutableArray<CodeActionOperation>> GetOperationsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Diagnostic diagnostic = this.DocumentDiagnosticsToFix.Values.SelectMany(i => i.Values).Concat(this.ProjectDiagnosticsToFix.Values).First().First();
-            Document document = this.Solution.GetDocument(diagnostic.Location.SourceTree);
-            HashSet<string> diagnosticIds = new HashSet<string>(this.DocumentDiagnosticsToFix.Values.SelectMany(i => i.Values).Concat(this.ProjectDiagnosticsToFix.Values).SelectMany(i => i.Select(j => j.Id)));
+            var diagnostic = DocumentDiagnosticsToFix.Values.SelectMany(i => i.Values).Concat(ProjectDiagnosticsToFix.Values).First().First();
+            var document = Solution.GetDocument(diagnostic.Location.SourceTree);
+            var diagnosticIds = new HashSet<string>(DocumentDiagnosticsToFix.Values.SelectMany(i => i.Values).Concat(ProjectDiagnosticsToFix.Values).SelectMany(i => i.Select(j => j.Id)));
 
-            var diagnosticsProvider = new FixDiagnosticProvider(this.DocumentDiagnosticsToFix, this.ProjectDiagnosticsToFix);
+            var diagnosticsProvider = new FixDiagnosticProvider(DocumentDiagnosticsToFix, ProjectDiagnosticsToFix);
 
-            var context = new FixAllContext(document, this.CodeFixProvider, FixAllScope.Solution, this.CodeFixEquivalenceKey, diagnosticIds, diagnosticsProvider, cancellationToken);
+            var context = new FixAllContext(document, CodeFixProvider, FixAllScope.Solution, CodeFixEquivalenceKey, diagnosticIds, diagnosticsProvider, cancellationToken);
 
-            CodeAction action = await this.FixAllProvider.GetFixAsync(context).ConfigureAwait(false);
+            var action = await FixAllProvider.GetFixAsync(context).ConfigureAwait(false);
             if (action == null)
             {
                 return Enumerable.Empty<CodeActionOperation>()
@@ -151,7 +151,7 @@ namespace Saritasa.Prettify.Core
 
         private static async Task<IEnumerable<CodeAction>> GetFixesAsync(Solution solution, CodeFixProvider codeFixProvider, Diagnostic diagnostic, CancellationToken cancellationToken)
         {
-            List<CodeAction> codeActions = new List<CodeAction>();
+            var codeActions = new List<CodeAction>();
 
             await codeFixProvider.RegisterCodeFixesAsync(new CodeFixContext(solution.GetDocument(diagnostic.Location.SourceTree), diagnostic, (a, d) => codeActions.Add(a), cancellationToken)).ConfigureAwait(false);
 

@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.openSolutionDialog = new System.Windows.Forms.OpenFileDialog();
             this.selectSolutionButton = new System.Windows.Forms.Button();
             this.selectedSolutionTextBox = new System.Windows.Forms.TextBox();
